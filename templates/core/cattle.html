@@ -1,0 +1,74 @@
+{% extends 'core/base.html' %}
+
+{% block title %}My Cattle - UGCINO{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="bg-white rounded-xl shadow-sm">
+            <div class="border-b px-6 py-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold">My Cattle</h1>
+                <a href="/cattle/add/" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary transition">
+                    <i class="fas fa-plus mr-2"></i> Add Cattle
+                </a>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Tag Number</th>
+                            <th class="px-4 py-3 text-left">Name</th>
+                            <th class="px-4 py-3 text-left">Breed</th>
+                            <th class="px-4 py-3 text-left">Sex</th>
+                            <th class="px-4 py-3 text-left">Status</th>
+                            <th class="px-4 py-3 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        {% for animal in cattle %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-mono">{{ animal.tag_number }}</td>
+                            <td class="px-4 py-3">{{ animal.name|default:"—" }}</td>
+                            <td class="px-4 py-3">{{ animal.get_breed_display }}</td>
+                            <td class="px-4 py-3">{{ animal.get_sex_display }}</td>
+                            <td class="px-4 py-3">
+                                {% if animal.vaccination_status == 'fully' %}
+                                <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                                    <i class="fas fa-check-circle"></i> Fully Vaccinated
+                                </span>
+                                {% elif animal.vaccination_status == 'partial' %}
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
+                                    <i class="fas fa-hourglass-half"></i> Dose 1 Given
+                                </span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
+                                    <i class="fas fa-times-circle"></i> Not Vaccinated
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                <a href="/vet/cattle/{{ animal.id }}/" class="text-blue-600 hover:text-blue-800 mr-3">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="/vet/vaccinate/{{ animal.id }}/" class="text-green-600 hover:text-green-800">
+                                    <i class="fas fa-syringe"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-gray-500">
+                                <i class="fas fa-paw text-4xl mb-3"></i>
+                                <p>No cattle registered yet.</p>
+                                <a href="/cattle/add/" class="inline-block mt-2 text-primary hover:underline">Register your first animal</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

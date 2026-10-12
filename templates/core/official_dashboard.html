@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Government Official Dashboard - UGCINO{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Government Official Dashboard</h1>
+            <p class="text-gray-600">National Livestock Vaccination Monitoring</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500"><p class="text-gray-500">Total Cattle</p><p class="text-3xl font-bold">{{ total_cattle }}</p></div>
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500"><p class="text-gray-500">Fully Vaccinated</p><p class="text-3xl font-bold text-green-600">{{ fully_vaccinated }}</p></div>
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500"><p class="text-gray-500">Partially Vaccinated</p><p class="text-3xl font-bold text-yellow-600">{{ partially_vaccinated }}</p></div>
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-500"><p class="text-gray-500">Not Vaccinated</p><p class="text-3xl font-bold text-red-600">{{ unvaccinated }}</p></div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <div class="flex justify-between mb-2"><span class="font-semibold">National Vaccination Progress</span><span>{{ national_rate }}%</span></div>
+            <div class="w-full bg-gray-200 rounded-full h-4"><div class="bg-primary h-4 rounded-full" style="width: {{ national_rate }}%"></div></div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold mb-4">Provincial Breakdown</h2>
+                {% for province in provinces %}
+                <div class="mb-3"><div class="flex justify-between"><span>{{ province.province }}</span><span>{{ province.vaccinated }}/{{ province.total }} ({{ province.rate }}%)</span></div>
+                <div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-green-600 h-2 rounded-full" style="width: {{ province.rate }}%"></div></div></div>
+                {% endfor %}
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold mb-4">Quick Actions</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <a href="{% url 'official_manage_alerts' %}" class="text-center p-4 bg-red-50 rounded-lg"><i class="fas fa-bell text-red-600 text-2xl"></i><p class="text-sm">Issue Alert</p></a>
+                    <a href="{% url 'official_reports' %}" class="text-center p-4 bg-blue-50 rounded-lg"><i class="fas fa-chart-line text-blue-600 text-2xl"></i><p class="text-sm">Generate Report</p></a>
+                    <a href="{% url 'official_under_vaccinated' %}" class="text-center p-4 bg-yellow-50 rounded-lg"><i class="fas fa-search-location text-yellow-600 text-2xl"></i><p class="text-sm">Identify Gaps</p></a>
+                    <a href="{% url 'disease_map' %}" class="..."><i class="fas fa-map-marked-alt"></i> View Disease Map</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

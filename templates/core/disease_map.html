@@ -1,0 +1,131 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Disease & Vaccination Map - UGCINO{% endblock %}
+
+{% block extra_css %}
+<style>
+    .map-container {
+        height: 700px;
+        width: 100%;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .map-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    .stats-card {
+        transition: transform 0.3s ease;
+    }
+    .stats-card:hover {
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">Disease Outbreak & Vaccination Map</h1>
+            <p class="text-gray-600">Real-time monitoring of FMD outbreaks and vaccination coverage across South Africa</p>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            <div class="stats-card bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
+                <p class="text-gray-500 text-sm">Total Farms</p>
+                <p class="text-2xl font-bold text-blue-600">{{ total_farms }}</p>
+            </div>
+            <div class="stats-card bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
+                <p class="text-gray-500 text-sm">Well Vaccinated Farms</p>
+                <p class="text-2xl font-bold text-green-600">{{ vaccinated_farms }}</p>
+                <p class="text-xs text-gray-500">80%+ coverage</p>
+            </div>
+            <div class="stats-card bg-white rounded-xl shadow-sm p-4 border-l-4 border-red-500">
+                <p class="text-gray-500 text-sm">High Risk Farms</p>
+                <p class="text-2xl font-bold text-red-600">{{ high_risk_farms }}</p>
+                <p class="text-xs text-gray-500">&lt;50% coverage</p>
+            </div>
+            <div class="stats-card bg-white rounded-xl shadow-sm p-4 border-l-4 border-orange-500">
+                <p class="text-gray-500 text-sm">Active Outbreaks</p>
+                <p class="text-2xl font-bold text-orange-600">{{ outbreak_count }}</p>
+                <p class="text-xs text-gray-500">FMD affected zones</p>
+            </div>
+            <div class="stats-card bg-white rounded-xl shadow-sm p-4 border-l-4 border-purple-500">
+                <p class="text-gray-500 text-sm">National Coverage</p>
+                <p class="text-2xl font-bold text-purple-600">{{ national_rate }}%</p>
+                <p class="text-xs text-gray-500">{{ fully_vaccinated }}/{{ total_cattle }}</p>
+            </div>
+        </div>
+        
+        <!-- Alert Banner for High Risk Areas -->
+        {% if high_risk_farms > 0 %}
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-6">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-500 text-xl mr-3"></i>
+                <div>
+                    <p class="font-semibold text-red-700">⚠️ High Risk Areas Detected</p>
+                    <p class="text-sm text-red-600">{{ high_risk_farms }} farms have vaccination coverage below 50%. Immediate action recommended.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- The Map -->
+        <div class="map-container">
+            {{ map_html|safe }}
+        </div>
+        
+        <!-- Legend Explanation -->
+        <div class="mt-6 bg-white rounded-xl shadow-sm p-4">
+            <h3 class="font-semibold text-gray-800 mb-3">📖 How to Read the Map</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="flex items-start">
+                    <div class="w-4 h-4 bg-green-500 rounded-full mt-1 mr-2"></div>
+                    <div>
+                        <span class="font-medium">📍 Farm Markers</span>
+                        <p class="text-gray-500 text-xs">Green = High vaccination (80%+), Orange = Partial (50-80%), Red = Low risk (&lt;50%)</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="w-4 h-4 bg-red-500 rounded-full mt-1 mr-2"></div>
+                    <div>
+                        <span class="font-medium">🔥 Red Circles</span>
+                        <p class="text-gray-500 text-xs">Active disease outbreak zones. Keep cattle away from these areas.</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="w-8 h-3 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 rounded mt-1 mr-2"></div>
+                    <div>
+                        <span class="font-medium">🌸 Colored Areas</span>
+                        <p class="text-gray-500 text-xs">Heatmap showing vaccination density (greener = better coverage)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 pt-3 border-t text-center text-xs text-gray-500">
+                <i class="fas fa-mouse-pointer"></i> Click on any marker or circle for detailed information
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="{% url 'official_manage_alerts' %}" class="bg-red-600 text-white p-3 rounded-lg text-center hover:bg-red-700">
+                <i class="fas fa-bell"></i> Report Outbreak
+            </a>
+            <a href="{% url 'national_progress' %}" class="bg-blue-600 text-white p-3 rounded-lg text-center hover:bg-blue-700">
+                <i class="fas fa-chart-line"></i> View Progress
+            </a>
+            <a href="{% url 'my_cattle' %}" class="bg-green-600 text-white p-3 rounded-lg text-center hover:bg-green-700">
+                <i class="fas fa-syringe"></i> Record Vaccination
+            </a>
+            <a href="{% url 'qr_verification' %}" class="bg-purple-600 text-white p-3 rounded-lg text-center hover:bg-purple-700">
+                <i class="fas fa-qrcode"></i> QR Verification
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

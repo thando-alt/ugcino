@@ -1,0 +1,52 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Veterinary Reports - UGCINO{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="bg-white rounded-xl shadow-sm">
+            <div class="border-b px-6 py-4 bg-gradient-to-r from-orange-50 to-white">
+                <h1 class="text-2xl font-bold">Veterinary Reports</h1>
+                <p class="text-gray-600">View analytics and generate reports</p>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid md:grid-cols-3 gap-6 p-6 border-b">
+                <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-4 text-center">
+                    <div class="text-3xl font-bold text-blue-600">{{ total_vaccinations }}</div>
+                    <p class="text-gray-600 text-sm">Total Vaccinations</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-white rounded-xl p-4 text-center">
+                    <div class="text-3xl font-bold text-green-600">{{ dose1_count }}</div>
+                    <p class="text-gray-600 text-sm">First Doses</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-white rounded-xl p-4 text-center">
+                    <div class="text-3xl font-bold text-purple-600">{{ dose2_count }}</div>
+                    <p class="text-gray-600 text-sm">Booster Doses</p>
+                </div>
+            </div>
+            
+            <!-- Report Generation -->
+            <div class="p-6">
+                <h3 class="font-bold text-lg mb-4">Generate Custom Report</h3>
+                <form method="get" class="flex flex-wrap gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input type="date" name="start_date" class="px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input type="date" name="end_date" class="px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-secondary">
+                            <i class="fas fa-download"></i> Generate Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

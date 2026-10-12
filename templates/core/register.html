@@ -1,0 +1,284 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Register - UGCINO{% endblock %}
+
+{% block extra_css %}
+<style>
+    .password-requirement {
+        transition: all 0.2s ease;
+        font-size: 0.75rem;
+    }
+    .password-requirement.valid {
+        color: #10b981;
+    }
+    .password-requirement.invalid {
+        color: #ef4444;
+    }
+    .requirement-icon {
+        width: 16px;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-12">
+    <div class="container mx-auto px-4 max-w-2xl">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="gradient-bg px-6 py-4 text-center">
+                <i class="fas fa-user-plus text-3xl text-white mb-2"></i>
+                <h1 class="text-2xl font-bold text-white">Register for UGCINO</h1>
+                <p class="text-green-100">Create your account to access the system</p>
+            </div>
+            
+            <form method="post" class="p-6" id="registerForm">
+                {% csrf_token %}
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">First Name *</label>
+                        <input type="text" name="first_name" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Last Name *</label>
+                        <input type="text" name="last_name" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Username *</label>
+                        <input type="text" name="username" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Email *</label>
+                        <input type="email" name="email" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Role *</label>
+                    <select name="role" required class="w-full px-4 py-2 border rounded-lg" id="roleSelect" onchange="toggleRoleFields()">
+                        <option value="farmer">Farmer</option>
+                        <option value="vet">Veterinarian</option>
+                        <option value="exporter">Exporter</option>
+                        <option value="official">Government Official</option>
+                        <option value="distributor">Distributor</option>
+                        <option value="inspector">Inspector</option>
+                    </select>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Phone Number *</label>
+                        <input type="tel" name="phone" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">ID Number *</label>
+                        <input type="text" name="id_number" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Province *</label>
+                        <select name="province" required class="w-full px-4 py-2 border rounded-lg">
+                            <option value="">Select Province</option>
+                            <option value="Gauteng">Gauteng</option>
+                            <option value="Western Cape">Western Cape</option>
+                            <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                            <option value="Eastern Cape">Eastern Cape</option>
+                            <option value="Free State">Free State</option>
+                            <option value="Limpopo">Limpopo</option>
+                            <option value="Mpumalanga">Mpumalanga</option>
+                            <option value="North West">North West</option>
+                            <option value="Northern Cape">Northern Cape</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">District *</label>
+                        <input type="text" name="district" required class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                
+                <!-- Vet-specific field -->
+                <div id="vetField" class="mb-4" style="display: none;">
+                    <label class="block text-gray-700 font-semibold mb-2">Practice Number *</label>
+                    <input type="text" name="practice_number" placeholder="e.g., VET12345" class="w-full px-4 py-2 border rounded-lg">
+                </div>
+                
+                <!-- Exporter/Distributor-specific field -->
+                <div id="companyField" class="mb-4" style="display: none;">
+                    <label class="block text-gray-700 font-semibold mb-2">Company Name *</label>
+                    <input type="text" name="company_name" placeholder="Your Company Name" class="w-full px-4 py-2 border rounded-lg">
+                </div>
+                
+                <!-- Password Fields with Requirements -->
+                <div class="grid md:grid-cols-2 gap-4 mb-2">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Password *</label>
+                        <input type="password" name="password" id="password" required 
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Confirm Password *</label>
+                        <input type="password" name="password2" id="password2" required 
+                               class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+                
+                <!-- Password Requirements Display -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Password requirements (must have all):</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="password-requirement" id="req-length">
+                            <span class="requirement-icon">❌</span> At least 8 characters
+                        </div>
+                        <div class="password-requirement" id="req-upper">
+                            <span class="requirement-icon">❌</span> One uppercase letter (A-Z)
+                        </div>
+                        <div class="password-requirement" id="req-number">
+                            <span class="requirement-icon">❌</span> One number (0-9)
+                        </div>
+                        <div class="password-requirement" id="req-special">
+                            <span class="requirement-icon">❌</span> One special character (! @ # $ % ^ & *)
+                        </div>
+                    </div>
+                    <div class="password-requirement mt-2" id="req-match">
+                        <span class="requirement-icon">❌</span> Passwords match
+                    </div>
+                </div>
+                
+                <button type="submit" id="submitBtn" class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-secondary transition opacity-50 cursor-not-allowed" disabled>
+                    <i class="fas fa-user-plus mr-2"></i> Register
+                </button>
+            </form>
+            
+            <div class="border-t px-6 py-4 bg-gray-50 text-center">
+                <p class="text-gray-600">
+                    Already have an account? <a href="{% url 'login' %}" class="text-primary font-semibold">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleRoleFields() {
+    var role = document.getElementById('roleSelect').value;
+    var vetField = document.getElementById('vetField');
+    var companyField = document.getElementById('companyField');
+    
+    if (role === 'vet') {
+        vetField.style.display = 'block';
+        companyField.style.display = 'none';
+        document.querySelector('#vetField input').required = true;
+        if (companyField.querySelector('input')) companyField.querySelector('input').required = false;
+    } else if (role === 'exporter' || role === 'distributor') {
+        vetField.style.display = 'none';
+        companyField.style.display = 'block';
+        if (vetField.querySelector('input')) vetField.querySelector('input').required = false;
+        document.querySelector('#companyField input').required = true;
+    } else {
+        vetField.style.display = 'none';
+        companyField.style.display = 'none';
+        if (vetField.querySelector('input')) vetField.querySelector('input').required = false;
+        if (companyField.querySelector('input')) companyField.querySelector('input').required = false;
+    }
+}
+
+// Password validation
+const password = document.getElementById('password');
+const password2 = document.getElementById('password2');
+const submitBtn = document.getElementById('submitBtn');
+
+// Requirements
+const reqLength = document.getElementById('req-length');
+const reqUpper = document.getElementById('req-upper');
+const reqNumber = document.getElementById('req-number');
+const reqSpecial = document.getElementById('req-special');
+const reqMatch = document.getElementById('req-match');
+
+function validatePassword() {
+    const pwd = password.value;
+    let allValid = true;
+    
+    // Length check (at least 8)
+    if (pwd.length >= 8) {
+        reqLength.innerHTML = '<span class="requirement-icon">✅</span> At least 8 characters';
+        reqLength.classList.add('valid');
+        reqLength.classList.remove('invalid');
+    } else {
+        reqLength.innerHTML = '<span class="requirement-icon">❌</span> At least 8 characters';
+        reqLength.classList.add('invalid');
+        reqLength.classList.remove('valid');
+        allValid = false;
+    }
+    
+    // Uppercase letter check
+    if (/[A-Z]/.test(pwd)) {
+        reqUpper.innerHTML = '<span class="requirement-icon">✅</span> One uppercase letter (A-Z)';
+        reqUpper.classList.add('valid');
+        reqUpper.classList.remove('invalid');
+    } else {
+        reqUpper.innerHTML = '<span class="requirement-icon">❌</span> One uppercase letter (A-Z)';
+        reqUpper.classList.add('invalid');
+        reqUpper.classList.remove('valid');
+        allValid = false;
+    }
+    
+    // Number check
+    if (/[0-9]/.test(pwd)) {
+        reqNumber.innerHTML = '<span class="requirement-icon">✅</span> One number (0-9)';
+        reqNumber.classList.add('valid');
+        reqNumber.classList.remove('invalid');
+    } else {
+        reqNumber.innerHTML = '<span class="requirement-icon">❌</span> One number (0-9)';
+        reqNumber.classList.add('invalid');
+        reqNumber.classList.remove('valid');
+        allValid = false;
+    }
+    
+    // Special character check
+    if (/[!@#$%^&*]/.test(pwd)) {
+        reqSpecial.innerHTML = '<span class="requirement-icon">✅</span> One special character (! @ # $ % ^ & *)';
+        reqSpecial.classList.add('valid');
+        reqSpecial.classList.remove('invalid');
+    } else {
+        reqSpecial.innerHTML = '<span class="requirement-icon">❌</span> One special character (! @ # $ % ^ & *)';
+        reqSpecial.classList.add('invalid');
+        reqSpecial.classList.remove('valid');
+        allValid = false;
+    }
+    
+    // Password match check
+    if (password2.value && pwd === password2.value) {
+        reqMatch.innerHTML = '<span class="requirement-icon">✅</span> Passwords match';
+        reqMatch.classList.add('valid');
+        reqMatch.classList.remove('invalid');
+    } else {
+        reqMatch.innerHTML = '<span class="requirement-icon">❌</span> Passwords match';
+        reqMatch.classList.add('invalid');
+        reqMatch.classList.remove('valid');
+        allValid = false;
+    }
+    
+    // Enable/disable submit button
+    if (allValid && pwd.length > 0) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        submitBtn.classList.add('hover:bg-secondary');
+    } else {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        submitBtn.classList.remove('hover:bg-secondary');
+    }
+}
+
+password.addEventListener('input', validatePassword);
+password2.addEventListener('input', validatePassword);
+
+// Initial validation
+validatePassword();
+</script>
+{% endblock %}

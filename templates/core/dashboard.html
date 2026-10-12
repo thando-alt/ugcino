@@ -1,0 +1,151 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<section class="py-12 bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4">
+        <!-- Welcome Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Welcome back, {{ user.first_name|default:user.username }}!</h1>
+            <p class="text-gray-600">Here's your livestock management overview</p>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Cattle</p>
+                        <p class="text-3xl font-bold text-primary">{{ total_cattle }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-paw text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Fully Vaccinated</p>
+                        <p class="text-3xl font-bold text-green-600">{{ vaccinated }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Partially Vaccinated</p>
+                        <p class="text-3xl font-bold text-yellow-600">{{ partial }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-hourglass-half text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Not Vaccinated</p>
+                        <p class="text-3xl font-bold text-red-600">{{ unvaccinated }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <div class="flex justify-between mb-2">
+                <span class="font-semibold">Vaccination Progress</span>
+                <span class="text-primary font-bold">{{ vaccination_rate }}% Complete</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4">
+                <div class="bg-primary h-4 rounded-full" style="width: {{ vaccination_rate }}%"></div>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">Target: 80% herd immunity</p>
+        </div>
+        
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Recent Cattle -->
+            <div class="bg-white rounded-xl shadow-md">
+                <div class="border-b px-6 py-4">
+                    <h3 class="font-bold text-lg">Recent Cattle Records</h3>
+                </div>
+                <div class="p-6">
+                    {% if cattle_list %}
+                    <div class="space-y-3">
+                        {% for cattle in cattle_list %}
+                        <div class="flex items-center justify-between py-2 border-b">
+                            <div>
+                                <p class="font-medium">{{ cattle.tag_number }}</p>
+                                <p class="text-sm text-gray-500">{{ cattle.get_breed_display }} • {{ cattle.age_months }} months</p>
+                            </div>
+                            <span class="px-2 py-1 text-xs rounded-full {% if cattle.status == 'vaccinated' %}bg-green-100 text-green-700{% elif cattle.status == 'partial' %}bg-yellow-100 text-yellow-700{% else %}bg-red-100 text-red-700{% endif %}">
+                                {{ cattle.get_status_display }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-center py-4">No cattle registered yet.</p>
+                    {% endif %}
+                    <a href="/my-cattle/" class="inline-block mt-4 text-primary hover:underline">View all cattle →</a>
+                </div>
+            </div>
+            
+            <!-- Upcoming Vaccinations -->
+            <div class="bg-white rounded-xl shadow-md">
+                <div class="border-b px-6 py-4">
+                    <h3 class="font-bold text-lg">Upcoming Booster Shots</h3>
+                </div>
+                <div class="p-6">
+                    {% if upcoming_boosters %}
+                    <div class="space-y-3">
+                        {% for vax in upcoming_boosters %}
+                        <div class="flex items-center justify-between py-2 border-b">
+                            <div>
+                                <p class="font-medium">{{ vax.cattle.tag_number }}</p>
+                                <p class="text-sm text-gray-500">Booster due: {{ vax.next_dose_date }}</p>
+                            </div>
+                            <a href="/vaccinate/{{ vax.cattle.id }}/" class="px-3 py-1 bg-primary text-white text-sm rounded-lg hover:bg-secondary">
+                                Record Now
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-center py-4">No upcoming vaccinations due.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="/add-cattle/" class="bg-primary text-white p-4 rounded-xl text-center hover:bg-secondary transition">
+                <i class="fas fa-plus-circle text-2xl mb-2"></i>
+                <p class="font-semibold">Add Cattle</p>
+            </a>
+            <a href="/my-cattle/" class="bg-secondary text-white p-4 rounded-xl text-center hover:bg-primary transition">
+                <i class="fas fa-list text-2xl mb-2"></i>
+                <p class="font-semibold">View Cattle</p>
+            </a>
+            <a href="/alerts/" class="bg-warning text-white p-4 rounded-xl text-center hover:bg-yellow-600 transition">
+                <i class="fas fa-bell text-2xl mb-2"></i>
+                <p class="font-semibold">Disease Alerts</p>
+            </a>
+            <a href="#" class="bg-highlight text-white p-4 rounded-xl text-center hover:bg-green-600 transition">
+                <i class="fas fa-download text-2xl mb-2"></i>
+                <p class="font-semibold">Reports</p>
+            </a>
+            <a href="{% url 'disease_map' %}" class="...">
+    <i class="fas fa-map-marked-alt"></i> View Disease Map
+</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

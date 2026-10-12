@@ -1,0 +1,85 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Record Vaccination - UGCINO Vet Portal{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-12">
+    <div class="container mx-auto px-4 max-w-2xl">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="gradient-bg px-6 py-4">
+                <h1 class="text-2xl font-bold text-white">Record Vaccination</h1>
+                <p class="text-green-100">Document vaccine administration</p>
+            </div>
+            
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Select Cattle *</label>
+                    <select name="cattle_id" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">-- Select Cattle --</option>
+                        {% for animal in all_cattle %}
+                        <option value="{{ animal.id }}" {% if selected_cattle == animal.id|stringformat:"s" %}selected{% endif %}>
+                            {{ animal.tag_number }} - {{ animal.name|default:animal.get_breed_display }} ({{ animal.farm.farm_name }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-semibold mb-2">Vaccine Batch *</label>
+                    <select name="vaccine_batch" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">-- Select Batch --</option>
+                        {% for batch in batches %}
+                        <option value="{{ batch.id }}">
+                            {{ batch.batch_number }} - {{ batch.manufacturer }} ({{ batch.quantity_remaining }} doses left)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Dose Number *</label>
+                        <select name="dose_number" required class="w-full px-4 py-2 border rounded-lg">
+                            <option value="1">First Dose</option>
+                            <option value="2">Second Dose (Booster)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Vaccination Date *</label>
+                        <input type="date" name="vaccination_date" required value="{{ today }}"
+                               class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                
+                <input type="hidden" name="appointment_id" value="{{ request.GET.appointment }}">
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <div>
+                            <p class="text-sm text-blue-800 font-semibold">Before administering:</p>
+                            <ul class="text-xs text-blue-600 mt-1 space-y-1">
+                                <li>✓ Verify cattle tag number matches records</li>
+                                <li>✓ Check vaccine batch expiry date</li>
+                                <li>✓ Ensure cold chain integrity</li>
+                                <li>✓ Record any adverse reactions</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <button type="submit" class="flex-1 bg-primary text-white py-3 rounded-lg font-semibold hover:bg-secondary transition">
+                        <i class="fas fa-save mr-2"></i> Record Vaccination
+                    </button>
+                    <a href="{% url 'vet_dashboard' %}" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold text-center hover:bg-gray-400 transition">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

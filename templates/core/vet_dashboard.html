@@ -1,0 +1,456 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Veterinarian Dashboard - UGCINO{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .appointment-card {
+        transition: all 0.2s ease;
+        border-left: 3px solid;
+    }
+    .appointment-card:hover {
+        background: #f0fdf4;
+        transform: translateX(5px);
+    }
+    .severity-high { border-left-color: #dc2626; }
+    .severity-medium { border-left-color: #f59e0b; }
+    .severity-low { border-left-color: #10b981; }
+    .quick-action-btn {
+        transition: all 0.2s ease;
+    }
+    .quick-action-btn:hover {
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <!-- Welcome Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Veterinary Dashboard</h1>
+            <p class="text-gray-600">Welcome back, Dr. {{ profile.user.get_full_name|default:profile.user.username }}</p>
+            <div class="flex items-center space-x-4 mt-2">
+                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                    <i class="fas fa-id-card mr-1"></i> Practice #: {{ profile.practice_number|default:"Not Assigned" }}
+                </span>
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    <i class="fas fa-map-marker-alt mr-1"></i> {{ profile.province }}, {{ profile.district }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6" style="border-left-color: #3b82f6;">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Vaccinations</p>
+                        <p class="text-3xl font-bold text-gray-800">{{ total_vaccinations|default:"0" }}</p>
+                        <p class="text-xs text-green-600 mt-1">
+                            <i class="fas fa-arrow-up"></i> Lifetime
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-syringe text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6" style="border-left-color: #10b981;">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Today's Schedule</p>
+                        <p class="text-3xl font-bold text-gray-800">{{ today_vaccinations|default:"0" }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Appointments today</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-calendar-day text-green-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6" style="border-left-color: #f59e0b;">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Pending Requests</p>
+                        <p class="text-3xl font-bold text-gray-800">{{ pending_appointments|length|default:"0" }}</p>
+                        <p class="text-xs text-yellow-600 mt-1">Awaiting response</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6" style="border-left-color: #8b5cf6;">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Herd Coverage</p>
+                        <p class="text-3xl font-bold text-gray-800">{{ fully_vaccinated|default:"0" }}<span class="text-lg">/{{ total_cattle|default:"0" }}</span></p>
+                        <p class="text-xs text-purple-600 mt-1">Fully vaccinated</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <div class="flex justify-between mb-2">
+                <span class="font-semibold">National Vaccination Progress</span>
+                <span class="text-primary font-bold">
+                    {% widthratio fully_vaccinated|default:0 total_cattle|default:1 100 %}%
+                </span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-4">
+                <div class="bg-primary h-4 rounded-full" style="width: {% widthratio fully_vaccinated|default:0 total_cattle|default:1 100 %}%"></div>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">Target: 80% herd immunity for FMD control</p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Appointments Column -->
+            <div class="lg:col-span-1">
+                <!-- Today's Appointments -->
+                <div class="bg-white rounded-xl shadow-sm mb-6">
+                    <div class="border-b px-6 py-4 bg-gradient-to-r from-green-50 to-white">
+                        <h3 class="font-bold text-lg">
+                            <i class="fas fa-calendar-check text-green-600 mr-2"></i>
+                            Today's Appointments
+                        </h3>
+                    </div>
+                    <div class="p-4 max-h-96 overflow-y-auto">
+                        {% if today_appointments %}
+                            {% for apt in today_appointments %}
+                            <div class="appointment-card bg-gray-50 rounded-lg p-4 mb-3 border-l-4 border-green-500">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-gray-800">
+                                            <i class="fas fa-user-circle text-gray-500 mr-1"></i>
+                                            {{ apt.farmer.user.get_full_name }}
+                                        </p>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            {{ apt.appointment_date|date:"H:i" }}
+                                        </p>
+                                        {% if apt.cattle %}
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            <i class="fas fa-paw"></i> Cattle: {{ apt.cattle.tag_number }}
+                                        </p>
+                                        {% endif %}
+                                        {% if apt.notes %}
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            <i class="fas fa-sticky-note"></i> {{ apt.notes|truncatechars:50 }}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <span class="px-2 py-1 text-xs rounded-full 
+                                            {% if apt.status == 'pending' %}bg-yellow-100 text-yellow-700
+                                            {% elif apt.status == 'confirmed' %}bg-green-100 text-green-700
+                                            {% elif apt.status == 'completed' %}bg-blue-100 text-blue-700
+                                            {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                            {{ apt.status|title }}
+                                        </span>
+                                    </div>
+                                </div>
+                                {% if apt.status == 'confirmed' or apt.status == 'pending' %}
+                                <div class="mt-3 flex space-x-2">
+                                    <a href="{% url 'vet_vaccinate' apt.cattle.id %}?appointment={{ apt.id }}" 
+                                       class="text-sm bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition">
+                                        <i class="fas fa-syringe"></i> Record Vaccination
+                                    </a>
+                                    <form method="post" action="{% url 'update_appointment' apt.id %}" class="inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="completed">
+                                        <button type="submit" class="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition">
+                                            <i class="fas fa-check"></i> Complete
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-6 text-gray-500">
+                                <i class="fas fa-calendar-check text-4xl mb-2 text-gray-300"></i>
+                                <p>No appointments scheduled for today</p>
+                                <p class="text-xs mt-1">Check back later for updates</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="border-t px-6 py-3 bg-gray-50">
+                        <a href="{% url 'vet_appointments' %}" class="text-green-600 hover:underline text-sm flex items-center">
+                            View all appointments <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Pending Requests -->
+                <div class="bg-white rounded-xl shadow-sm">
+                    <div class="border-b px-6 py-4 bg-gradient-to-r from-yellow-50 to-white">
+                        <h3 class="font-bold text-lg">
+                            <i class="fas fa-hourglass-half text-yellow-600 mr-2"></i>
+                            Pending Appointment Requests
+                        </h3>
+                    </div>
+                    <div class="p-4 max-h-96 overflow-y-auto">
+                        {% if pending_appointments %}
+                            {% for apt in pending_appointments %}
+                                {% if apt.status == 'pending' %}
+                                <div class="border-b pb-4 mb-4 last:border-0">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-medium text-gray-800">
+                                                {{ apt.farmer.user.get_full_name }}
+                                            </p>
+                                            <p class="text-sm text-gray-500">
+                                                <i class="fas fa-calendar mr-1"></i>
+                                                {{ apt.appointment_date|date:"M d, Y H:i" }}
+                                            </p>
+                                            <p class="text-sm text-gray-500">
+                                                <i class="fas fa-phone mr-1"></i>
+                                                {{ apt.farmer.phone_number }}
+                                            </p>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <form method="post" action="{% url 'update_appointment' apt.id %}" class="inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="confirmed">
+                                                <button type="submit" class="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700">
+                                                    <i class="fas fa-check"></i> Accept
+                                                </button>
+                                            </form>
+                                            <form method="post" action="{% url 'update_appointment' apt.id %}" class="inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="status" value="cancelled">
+                                                <button type="submit" class="px-3 py-1 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700">
+                                                    <i class="fas fa-times"></i> Decline
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    {% if apt.notes %}
+                                    <p class="text-xs text-gray-500 mt-2 bg-gray-50 p-2 rounded">
+                                        <i class="fas fa-comment"></i> {{ apt.notes }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-6 text-gray-500">
+                                <i class="fas fa-check-circle text-4xl mb-2 text-gray-300"></i>
+                                <p>No pending requests</p>
+                                <p class="text-xs mt-1">All caught up!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Column -->
+            <div class="lg:col-span-2">
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <a href="{% url 'vet_vaccinate' %}" 
+                       class="quick-action-btn bg-gradient-to-r from-green-600 to-green-700 text-white p-4 rounded-xl text-center hover:shadow-lg transition">
+                        <i class="fas fa-syringe text-2xl mb-2"></i>
+                        <p class="font-semibold text-sm">Record<br>Vaccination</p>
+                    </a>
+                    <a href="{% url 'vet_cattle_records' %}" 
+                       class="quick-action-btn bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-xl text-center hover:shadow-lg transition">
+                        <i class="fas fa-paw text-2xl mb-2"></i>
+                        <p class="font-semibold text-sm">View<br>Cattle Records</p>
+                    </a>
+                    <a href="{% url 'vet_appointments' %}" 
+                       class="quick-action-btn bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 rounded-xl text-center hover:shadow-lg transition">
+                        <i class="fas fa-calendar-alt text-2xl mb-2"></i>
+                        <p class="font-semibold text-sm">Manage<br>Appointments</p>
+                    </a>
+                    <a href="{% url 'vet_reports' %}" 
+                       class="quick-action-btn bg-gradient-to-r from-orange-600 to-orange-700 text-white p-4 rounded-xl text-center hover:shadow-lg transition">
+                        <i class="fas fa-chart-bar text-2xl mb-2"></i>
+                        <p class="font-semibold text-sm">Generate<br>Reports</p>
+                    </a>
+                    <a href="{% url 'disease_map' %}" class="...">
+    <i class="fas fa-map-marked-alt"></i> View Disease Map
+</a>
+                </div>
+
+                <!-- Recent Vaccinations -->
+                <div class="bg-white rounded-xl shadow-sm mb-6">
+                    <div class="border-b px-6 py-4 bg-gradient-to-r from-blue-50 to-white flex justify-between items-center">
+                        <h3 class="font-bold text-lg">
+                            <i class="fas fa-history text-blue-600 mr-2"></i>
+                            Recent Vaccinations Performed
+                        </h3>
+                        <a href="{% url 'vaccination_history' %}" class="text-sm text-blue-600 hover:underline">
+                            View all <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold">Date</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold">Cattle Tag</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold">Farm</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold">Dose</th>
+                                    <th class="px-4 py-3 text-left text-sm font-semibold">Batch</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                {% for vax in recent_vaccinations %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-sm">{{ vax.vaccination_date }}</td>
+                                    <td class="px-4 py-3 font-mono text-sm">{{ vax.cattle.tag_number }}</td>
+                                    <td class="px-4 py-3 text-sm">{{ vax.cattle.farm.farm_name|truncatechars:20 }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-1 {% if vax.dose_number == 1 %}bg-blue-100 text-blue-700{% else %}bg-green-100 text-green-700{% endif %} rounded-full text-xs">
+                                            Dose {{ vax.dose_number }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs font-mono">{{ vax.vaccine_batch.batch_number|truncatechars:15 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-gray-500">
+                                        <i class="fas fa-syringe text-3xl mb-2 text-gray-300"></i>
+                                        <p>No vaccinations recorded yet</p>
+                                        <a href="{% url 'vet_vaccinate' %}" class="text-green-600 text-sm hover:underline mt-1 inline-block">
+                                            Start recording vaccinations →
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Upcoming Boosters & Stock Alerts -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Upcoming Boosters -->
+                    <div class="bg-white rounded-xl shadow-sm">
+                        <div class="border-b px-6 py-4 bg-gradient-to-r from-orange-50 to-white">
+                            <h3 class="font-bold text-lg">
+                                <i class="fas fa-bell text-orange-600 mr-2"></i>
+                                Upcoming Booster Reminders
+                            </h3>
+                        </div>
+                        <div class="p-4 max-h-80 overflow-y-auto">
+                            {% for booster in upcoming_boosters %}
+                            <div class="flex justify-between items-center py-3 border-b last:border-0">
+                                <div>
+                                    <p class="font-medium text-gray-800">{{ booster.vaccination.cattle.tag_number }}</p>
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fas fa-calendar"></i> Due: {{ booster.due_date|date:"M d, Y" }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fas fa-tractor"></i> {{ booster.vaccination.cattle.farm.farm_name|truncatechars:20 }}
+                                    </p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'vet_vaccinate' booster.vaccination.cattle.id %}" 
+                                       class="px-3 py-1 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600 transition">
+                                        <i class="fas fa-syringe"></i> Record Booster
+                                    </a>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-6 text-gray-500">
+                                <i class="fas fa-bell-slash text-3xl mb-2 text-gray-300"></i>
+                                <p>No upcoming booster reminders</p>
+                                <p class="text-xs mt-1">All cattle are on schedule</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Vaccine Stock Alerts -->
+                    <div class="bg-white rounded-xl shadow-sm">
+                        <div class="border-b px-6 py-4 bg-gradient-to-r from-red-50 to-white">
+                            <h3 class="font-bold text-lg">
+                                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                                Vaccine Stock Alerts
+                            </h3>
+                        </div>
+                        <div class="p-4 max-h-80 overflow-y-auto">
+                            {% for batch in low_stock_batches %}
+                            <div class="flex justify-between items-center py-3 border-b last:border-0">
+                                <div>
+                                    <p class="font-medium text-gray-800">{{ batch.batch_number }}</p>
+                                    <p class="text-sm text-gray-600">{{ batch.manufacturer }}</p>
+                                    <div class="mt-1">
+                                        <div class="w-32 bg-gray-200 rounded-full h-1.5">
+                                            <div class="bg-red-500 h-1.5 rounded-full" style="width: {% widthratio batch.quantity_remaining batch.quantity 100 %}%"></div>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            {{ batch.quantity_remaining }} / {{ batch.quantity }} doses remaining
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">
+                                        Low Stock
+                                    </span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-6 text-gray-500">
+                                <i class="fas fa-check-circle text-green-500 text-3xl mb-2"></i>
+                                <p>All vaccine stocks are healthy</p>
+                                <p class="text-xs mt-1">Sufficient inventory for upcoming needs</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="border-t px-6 py-3 bg-gray-50">
+                            <a href="{% url 'vet_batch_tracking' %}" class="text-red-600 hover:underline text-sm flex items-center">
+                                View all batches <i class="fas fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cold Chain Breaches Alert -->
+                {% if recent_breaches %}
+                <div class="mt-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-thermometer-full text-red-500 text-xl mr-3 mt-1"></i>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-red-800">Cold Chain Breach Detected</h4>
+                            <p class="text-sm text-red-700 mt-1">
+                                Temperature deviations detected in the following batches:
+                            </p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                {% for breach in recent_breaches %}
+                                <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full">
+                                    {{ breach.batch.batch_number }} - {{ breach.temperature }}°C
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <a href="{% url 'cold_chain' %}" class="text-red-600 hover:underline text-sm">View Details →</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>{% block title %}UGCINO - Protecting South Africa's Livestock{% endblock %}</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom Theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a472a',
+                        secondary: '#2d6a4f',
+                        accent: '#40916c',
+                        highlight: '#52b788',
+                        warning: '#e9c46a',
+                        danger: '#e76f51',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #40916c 100%);
+        }
+        .gradient-hero {
+            background: linear-gradient(135deg, #0f2e1d 0%, #1a472a 50%, #2d6a4f 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1a472a, #52b788);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .alert-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 111, 81, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 111, 81, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 111, 81, 0); }
+        }
+        .toast-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="font-sans antialiased">
+    <!-- Navigation Bar -->
+    <nav class="gradient-bg text-white shadow-2xl">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="/" class="text-2xl font-bold flex items-center space-x-2">
+                        <i class="fas fa-shield-virus text-2xl"></i>
+                        <span>UGCINO</span>
+                    </a>
+                    <div class="hidden md:flex space-x-6">
+                        <a href="/" class="hover:text-highlight transition">Home</a>
+                        <a href="/about/" class="hover:text-highlight transition">About</a>
+                        <a href="/services/" class="hover:text-highlight transition">Services</a>
+                        <a href="/alerts/" class="hover:text-highlight transition">
+                            <i class="fas fa-bell mr-1"></i>Alerts
+                        </a>
+                        <a href="/contact/" class="hover:text-highlight transition">Contact</a>
+                        <a href="{% url 'disease_map' %}" class="...">
+    <i class="fas fa-map-marked-alt"></i> View Disease Map
+</a>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2 bg-white/10 px-4 py-2 rounded-lg hover:bg-white/20 transition">
+                                <i class="fas fa-user-circle text-xl"></i>
+                                <span>{{ user.username }}</span>
+                                <i class="fas fa-chevron-down text-sm"></i>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl hidden group-hover:block z-50">
+                                <a href="/dashboard/" class="block px-4 py-2 text-gray-700 hover:bg-green-50">Dashboard</a>
+                                <a href="/my-cattle/" class="block px-4 py-2 text-gray-700 hover:bg-green-50">My Cattle</a>
+                                <a href="/add-cattle/" class="block px-4 py-2 text-gray-700 hover:bg-green-50">Add Cattle</a>
+                                <div class="border-t"></div>
+                                <a href="/logout/" class="block px-4 py-2 text-red-600 hover:bg-red-50">Logout</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="/login/" class="px-4 py-2 bg-white text-primary rounded-lg font-semibold hover:bg-highlight hover:text-white transition">
+                            Login
+                        </a>
+                        <a href="/register/" class="px-4 py-2 border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-primary transition">
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="toast-message">
+        {% for message in messages %}
+        <div class="mb-2 px-6 py-3 rounded-lg shadow-lg {% if message.tags == 'success' %}bg-green-500{% elif message.tags == 'error' %}bg-red-500{% else %}bg-blue-500{% endif %} text-white">
+            <div class="flex items-center space-x-2">
+                {% if message.tags == 'success' %}
+                    <i class="fas fa-check-circle"></i>
+                {% elif message.tags == 'error' %}
+                    <i class="fas fa-exclamation-circle"></i>
+                {% else %}
+                    <i class="fas fa-info-circle"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Modern Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-shield-virus text-2xl text-highlight"></i>
+                        <h3 class="text-xl font-bold">UGCINO</h3>
+                    </div>
+                    <p class="text-gray-400">Protecting South Africa's livestock through innovative traceability and disease management solutions.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/" class="hover:text-highlight">Home</a></li>
+                        <li><a href="/about/" class="hover:text-highlight">About Us</a></li>
+                        <li><a href="/services/" class="hover:text-highlight">Services</a></li>
+                        <li><a href="/alerts/" class="hover:text-highlight">Disease Alerts</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-highlight">Farmers Guide</a></li>
+                        <li><a href="#" class="hover:text-highlight">Vaccination Schedule</a></li>
+                        <li><a href="#" class="hover:text-highlight">Report Disease</a></li>
+                        <li><a href="#" class="hover:text-highlight">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Contact Us</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><i class="fas fa-phone mr-2"></i> +27 12 345 6789</li>
+                        <li><i class="fas fa-envelope mr-2"></i> info@ugcino.co.za</li>
+                        <li><i class="fas fa-map-marker-alt mr-2"></i> Pretoria, South Africa</li>
+                    </ul>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-highlight"><i class="fab fa-facebook text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-highlight"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-highlight"><i class="fab fa-whatsapp text-xl"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 UGCINO. All rights reserved. Protecting Our Future.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Auto-hide messages after 5 seconds
+        setTimeout(() => {
+            const toast = document.querySelector('.toast-message');
+            if (toast) {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 5000);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

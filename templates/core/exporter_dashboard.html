@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Exporter Dashboard - UGCINO{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Exporter Dashboard</h1>
+            <p class="text-gray-600">Welcome, {{ profile.user.get_full_name|default:profile.user.username }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                <p class="text-gray-500 text-sm">Eligible Cattle</p>
+                <p class="text-3xl font-bold">{{ eligible_count }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                <p class="text-gray-500 text-sm">Total Certificates</p>
+                <p class="text-3xl font-bold">{{ total_certificates }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-purple-500">
+                <p class="text-gray-500 text-sm">Monthly Exports</p>
+                <p class="text-3xl font-bold">{{ monthly_exports }}</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 bg-gradient-to-r from-green-50 to-white">
+                <a href="{% url 'exporter_export' %}" class="block text-center">
+                    <i class="fas fa-plus-circle text-3xl text-green-600 mb-2"></i>
+                    <p class="font-semibold text-green-600">New Export</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm">
+            <div class="border-b px-6 py-4">
+                <h2 class="text-xl font-bold">Recent Export Certificates</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr><th class="px-4 py-3">Certificate #</th><th class="px-4 py-3">Cattle Tag</th><th class="px-4 py-3">Farm</th><th class="px-4 py-3">Issue Date</th><th class="px-4 py-3">Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for cert in certificates %}
+                        <tr class="border-b"><td class="px-4 py-2">{{ cert.certificate_number }}</td><td class="px-4 py-2">{{ cert.cattle.tag_number }}</td><td class="px-4 py-2">{{ cert.cattle.farm.farm_name }}</td><td class="px-4 py-2">{{ cert.issue_date }}</td><td class="px-4 py-2"><a href="{% url 'download_certificate' cert.id %}" class="text-green-600">Download PDF</a></td></tr>
+                        {% empty %}<tr><td colspan="5" class="text-center py-8">No certificates yet.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

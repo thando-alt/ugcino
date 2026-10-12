@@ -1,0 +1,269 @@
+{% extends 'core/base.html' %}
+
+{% block title %}National Vaccination Progress - UGCINO{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-bar {
+        transition: width 0.5s ease;
+    }
+    .stat-card {
+        transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">National Vaccination Progress</h1>
+            <p class="text-gray-600">Real-time monitoring of FMD vaccination campaign across South Africa</p>
+        </div>
+
+        <!-- National Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+                <p class="text-gray-500 text-sm">Total Cattle</p>
+                <p class="text-3xl font-bold text-blue-600">{{ total_cattle }}</p>
+                <p class="text-xs text-gray-500 mt-2">National herd count</p>
+            </div>
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
+                <p class="text-gray-500 text-sm">Fully Vaccinated</p>
+                <p class="text-3xl font-bold text-green-600">{{ fully_vaccinated }}</p>
+                <p class="text-xs text-gray-500 mt-2">Both doses completed</p>
+            </div>
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6 border-l-4 border-yellow-500">
+                <p class="text-gray-500 text-sm">Partially Vaccinated</p>
+                <p class="text-3xl font-bold text-yellow-600">{{ partially_vaccinated }}</p>
+                <p class="text-xs text-gray-500 mt-2">Dose 1 only</p>
+            </div>
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-500">
+                <p class="text-gray-500 text-sm">Not Vaccinated</p>
+                <p class="text-3xl font-bold text-red-600">{{ unvaccinated }}</p>
+                <p class="text-xs text-gray-500 mt-2">Require vaccination</p>
+            </div>
+        </div>
+
+        <!-- National Progress Bar -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-xl font-bold">National Vaccination Rate</h2>
+                    <p class="text-gray-500 text-sm">Target: 80% herd immunity</p>
+                </div>
+                <div class="text-right">
+                    <span class="text-4xl font-bold text-primary">{{ national_rate }}%</span>
+                    <p class="text-sm text-gray-500">Completion</p>
+                </div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-6">
+                <div class="progress-bar bg-primary h-6 rounded-full flex items-center justify-center text-white text-sm font-bold" 
+                     style="width: {{ national_rate }}%">
+                    {% if national_rate > 20 %}{{ national_rate }}%{% endif %}
+                </div>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-4">
+                <div class="bg-green-50 rounded-lg p-3 text-center">
+                    <p class="text-xs text-gray-500">Remaining to Target (80%)</p>
+                    <p class="text-xl font-bold text-green-600">{{ remaining_to_target }}</p>
+                    <p class="text-xs text-gray-500">cattle need vaccination</p>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-3 text-center">
+                    <p class="text-xs text-gray-500">80% Target Number</p>
+                    <p class="text-xl font-bold text-blue-600">{% widthratio total_cattle 80 100 %}</p>
+                    <p class="text-xs text-gray-500">cattle need full vaccination</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Provincial Breakdown -->
+        <div class="bg-white rounded-xl shadow-sm mb-8">
+            <div class="border-b px-6 py-4">
+                <h2 class="text-xl font-bold">Provincial Breakdown</h2>
+                <p class="text-gray-500 text-sm">Vaccination progress by province</p>
+            </div>
+            <div class="p-6">
+                {% for province in provinces %}
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <div>
+                            <span class="font-semibold text-gray-800">{{ province.province }}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-sm font-semibold text-primary">{{ province.rate }}%</span>
+                            <span class="text-xs text-gray-500"> ({{ province.vaccinated }}/{{ province.total }})</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="progress-bar bg-green-600 h-3 rounded-full" style="width: {{ province.rate }}%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>✅ Fully: {{ province.vaccinated }}</span>
+                        <span>⚠️ Partial: {{ province.partial|default:"0" }}</span>
+                        <span>❌ Not: {{ province.total|add:"-"|add:province.vaccinated|add:"-"|add:province.partial }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-8 text-gray-500">No provincial data available</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Weekly Trend Chart -->
+        <div class="bg-white rounded-xl shadow-sm mb-8">
+            <div class="border-b px-6 py-4">
+                <h2 class="text-xl font-bold">Weekly Vaccination Trend</h2>
+                <p class="text-gray-500 text-sm">Last 8 weeks activity</p>
+            </div>
+            <div class="p-6">
+                <canvas id="vaccinationChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Risk Assessment -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="font-bold text-lg mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-green-600 mr-2"></i>
+                    Progress Assessment
+                </h3>
+                {% if national_rate >= 80 %}
+                <div class="bg-green-100 border border-green-400 rounded-lg p-4">
+                    <i class="fas fa-check-circle text-green-600 text-xl mr-2"></i>
+                    <span class="font-semibold text-green-700">Excellent Progress!</span>
+                    <p class="text-sm text-green-600 mt-1">South Africa has achieved the 80% herd immunity target.</p>
+                </div>
+                {% elif national_rate >= 60 %}
+                <div class="bg-blue-100 border border-blue-400 rounded-lg p-4">
+                    <i class="fas fa-chart-line text-blue-600 text-xl mr-2"></i>
+                    <span class="font-semibold text-blue-700">Good Progress</span>
+                    <p class="text-sm text-blue-600 mt-1">Continue vaccination efforts to reach 80% target.</p>
+                </div>
+                {% elif national_rate >= 40 %}
+                <div class="bg-yellow-100 border border-yellow-400 rounded-lg p-4">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-2"></i>
+                    <span class="font-semibold text-yellow-700">Moderate Progress</span>
+                    <p class="text-sm text-yellow-600 mt-1">Accelerate vaccination in low-coverage areas.</p>
+                </div>
+                {% else %}
+                <div class="bg-red-100 border border-red-400 rounded-lg p-4">
+                    <i class="fas fa-exclamation-circle text-red-600 text-xl mr-2"></i>
+                    <span class="font-semibold text-red-700">Critical: Low Coverage</span>
+                    <p class="text-sm text-red-600 mt-1">Immediate action required to increase vaccination rates.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="font-bold text-lg mb-4 flex items-center">
+                    <i class="fas fa-bullhorn text-orange-600 mr-2"></i>
+                    Recommendations
+                </h3>
+                <ul class="space-y-2 text-sm">
+                    <li class="flex items-start">
+                        <i class="fas fa-arrow-right text-green-600 mt-1 mr-2"></i>
+                        Focus vaccination campaigns in provinces below 50%
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-arrow-right text-green-600 mt-1 mr-2"></i>
+                        Schedule booster reminders for partially vaccinated cattle
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-arrow-right text-green-600 mt-1 mr-2"></i>
+                        Monitor disease outbreak zones closely
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-arrow-right text-green-600 mt-1 mr-2"></i>
+                        Ensure adequate vaccine supply in low-coverage areas
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="bg-gradient-to-r from-primary to-secondary rounded-xl p-6 text-white text-center">
+            <h3 class="text-xl font-bold mb-2">Help Reach the 80% Target</h3>
+            <p class="mb-4">Register your cattle and ensure they receive both vaccine doses</p>
+            <div class="flex justify-center space-x-4">
+                <a href="{% url 'add_cattle' %}" class="inline-block bg-white text-primary px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
+                    <i class="fas fa-plus mr-2"></i> Register Cattle
+                </a>
+                <a href="{% url 'record_vaccination' %}" class="inline-block bg-transparent border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-primary transition">
+                    <i class="fas fa-syringe mr-2"></i> Record Vaccination
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Weekly data from Django context
+    const weeklyData = {{ weekly_data|safe }};
+    
+    const ctx = document.getElementById('vaccinationChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: weeklyData.map(item => item.week),
+            datasets: [{
+                label: 'Vaccinations Administered',
+                data: weeklyData.map(item => item.count),
+                borderColor: '#1a472a',
+                backgroundColor: 'rgba(26, 71, 42, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#2d6a4f',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.raw.toLocaleString()} vaccinations`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Vaccinations'
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString();
+                        }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Week'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

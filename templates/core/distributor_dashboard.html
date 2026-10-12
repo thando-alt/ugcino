@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Distributor Dashboard - UGCINO{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold mb-8">Distributor Dashboard</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 text-center"><p class="text-gray-500">Total Doses</p><p class="text-2xl font-bold">{{ total_doses }}</p></div>
+            <div class="bg-white rounded-xl p-6 text-center"><p class="text-gray-500">Total Batches</p><p class="text-2xl font-bold">{{ total_batches }}</p></div>
+            <div class="bg-white rounded-xl p-6 text-center"><p class="text-gray-500">Low Stock</p><p class="text-2xl font-bold text-yellow-600">{{ low_stock_count }}</p></div>
+            <div class="bg-white rounded-xl p-6 text-center"><p class="text-gray-500">Expiring Soon</p><p class="text-2xl font-bold text-orange-600">{{ expiring_soon }}</p></div>
+            <div class="bg-white rounded-xl p-6 text-center"><p class="text-gray-500">Breaches</p><p class="text-2xl font-bold text-red-600">{{ recent_breaches|length }}</p></div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <a href="{% url 'add_batch' %}" class="bg-primary text-white p-4 rounded-xl text-center">Add Batch</a>
+            <a href="{% url 'distributor_batch_management' %}" class="bg-blue-600 text-white p-4 rounded-xl text-center">Manage Batches</a>
+            <a href="{% url 'distributor_cold_chain' %}" class="bg-purple-600 text-white p-4 rounded-xl text-center">Cold Chain</a>
+            <a href="{% url 'distributor_stock_alerts' %}" class="bg-red-600 text-white p-4 rounded-xl text-center">Stock Alerts</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="gradient-hero text-white py-20">
+    <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                    Protecting <span class="text-highlight">South Africa's</span> Livestock Future
+                </h1>
+                <p class="text-xl mb-8 text-gray-200">
+                    UGCINO is South Africa's premier livestock traceability and vaccination management system. Track your cattle, monitor diseases, and ensure food safety.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="/register/" class="px-8 py-3 bg-highlight text-primary rounded-lg font-semibold hover:bg-white transition">
+                        Get Started <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                     <a href="{% url 'disease_map' %}" class="px-8 py-3 border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-primary transition">
+        <i class="fas fa-map-marked-alt mr-2"></i>View Disease Map
+    </a>
+                    <a href="/about/" class="px-8 py-3 border-2 border-white rounded-lg font-semibold hover:bg-white hover:text-primary transition">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8">
+                    <i class="fas fa-shield-virus text-7xl text-highlight mb-4"></i>
+                    <h3 class="text-2xl font-bold mb-2">Live Disease Tracking</h3>
+                    <p class="text-gray-200">Real-time FMD outbreak monitoring with 30km radius alerts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="card-hover">
+                <div class="text-5xl font-bold text-primary mb-2">{{ total_farms }}</div>
+                <p class="text-gray-600">Registered Farms</p>
+            </div>
+            <div class="card-hover">
+                <div class="text-5xl font-bold text-primary mb-2">{{ total_cattle }}</div>
+                <p class="text-gray-600">Cattle Tracked</p>
+            </div>
+            <div class="card-hover">
+                <div class="text-5xl font-bold text-primary mb-2">{{ vax_percentage }}%</div>
+                <p class="text-gray-600">Vaccination Rate</p>
+            </div>
+            <div class="card-hover">
+                <div class="text-5xl font-bold text-danger mb-2">{{ active_alerts }}</div>
+                <p class="text-gray-600">Active Disease Alerts</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="py-16 bg-gray-50">
+    <div class="container mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-12">Comprehensive <span class="text-primary">Traceability Solutions</span></h2>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-tag text-2xl text-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Animal Identification</h3>
+                <p class="text-gray-600">Unique ear tags with QR codes for individual animal tracking from birth to abattoir.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-syringe text-2xl text-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Vaccination Management</h3>
+                <p class="text-gray-600">Track vaccine batches, cold chain integrity, and automated booster reminders.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-map-marked-alt text-2xl text-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Real-time Disease Alerts</h3>
+                <p class="text-gray-600">Instant notifications when FMD outbreaks occur near your location.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-file-alt text-2xl text-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Export Certificates</h3>
+                <p class="text-gray-600">Generate tamper-proof digital export certificates with QR verification.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-chart-line text-2xl text-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Analytics Dashboard</h3>
+                <p class="text-gray-600">Interactive dashboards with vaccination coverage maps and trends.</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fas fa-mobile-alt text-2xl text-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Mobile Access</h3>
+                <p class="text-gray-600">Offline data capture and SMS integration for remote farmers.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Disease Alert Banner -->
+{% if recent_alerts %}
+<section class="py-16 bg-gradient-to-r from-danger/10 to-warning/10">
+    <div class="container mx-auto px-4">
+        <div class="bg-red-50 border-l-4 border-red-500 rounded-xl p-6">
+            <div class="flex items-start">
+                <i class="fas fa-exclamation-triangle text-red-500 text-3xl mr-4"></i>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-red-700 mb-2">Active Disease Alerts</h3>
+                    {% for alert in recent_alerts %}
+                    <div class="mb-2">
+                        <p><strong>{{ alert.disease_type }}</strong> - {{ alert.location }}</p>
+                        <p class="text-sm text-gray-600">{{ alert.description|truncatewords:20 }}</p>
+                    </div>
+                    {% endfor %}
+                    <a href="/alerts/" class="inline-block mt-2 text-red-600 font-semibold hover:underline">View all alerts →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="gradient-bg text-white py-16">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to Protect Your Livestock?</h2>
+        <p class="text-xl mb-8">Join thousands of South African farmers using UGCINO for comprehensive cattle management.</p>
+        <a href="/register/" class="px-8 py-3 bg-highlight text-primary rounded-lg font-semibold text-lg hover:bg-white transition inline-flex items-center">
+            Register Your Farm Now <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+    </div>
+</section>
+{% endblock %}

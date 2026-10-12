@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Add Cattle - UGCINO{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4 max-w-lg">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="gradient-bg px-6 py-3">
+                <h1 class="text-xl font-bold text-white">Register New Cattle</h1>
+                <p class="text-green-100 text-sm">Add animal to your herd</p>
+            </div>
+            
+            <form method="post" class="p-5">
+                {% csrf_token %}
+                
+                <!-- Farm Name -->
+                <div class="mb-3">
+                    <label class="block text-gray-700 font-semibold mb-1 text-sm">Farm Name *</label>
+                    <input type="text" name="farm_name" required 
+                           placeholder="Enter farm name"
+                           value="{{ request.POST.farm_name|default:'' }}"
+                           class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                
+                <!-- Tag Number -->
+                <div class="mb-3">
+                    <label class="block text-gray-700 font-semibold mb-1 text-sm">Tag Number *</label>
+                    <input type="text" name="tag_number" required 
+                           placeholder="e.g., ZA001234"
+                           value="{{ request.POST.tag_number|default:'' }}"
+                           class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                
+                <!-- Name (Optional) -->
+                <div class="mb-3">
+                    <label class="block text-gray-700 font-semibold mb-1 text-sm">Animal Name</label>
+                    <input type="text" name="name" 
+                           placeholder="Optional"
+                           value="{{ request.POST.name|default:'' }}"
+                           class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+                
+                <!-- Breed and Sex -->
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Breed *</label>
+                        <select name="breed" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                            <option value="">Select</option>
+                            <option value="brahman">Brahman</option>
+                            <option value="angus">Angus</option>
+                            <option value="hereford">Hereford</option>
+                            <option value="holstein">Holstein</option>
+                            <option value="jersey">Jersey</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Sex *</label>
+                        <select name="sex" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                            <option value="">Select</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- DOB and Weight -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Date of Birth *</label>
+                        <input type="date" name="date_of_birth" required 
+                               value="{{ request.POST.date_of_birth|default:'' }}"
+                               class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-1 text-sm">Weight (kg)</label>
+                        <input type="number" step="0.01" name="weight" 
+                               placeholder="Optional"
+                               value="{{ request.POST.weight|default:'' }}"
+                               class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                </div>
+                
+                <!-- Hidden GPS fields (optional, for new farms) -->
+                <input type="hidden" name="gps_latitude" value="-26.195">
+                <input type="hidden" name="gps_longitude" value="28.034">
+                <input type="hidden" name="farm_size" value="0">
+                
+                <!-- Buttons -->
+                <div class="flex space-x-3">
+                    <button type="submit" class="flex-1 bg-primary text-white py-2 rounded-lg font-semibold text-sm hover:bg-secondary transition">
+                        <i class="fas fa-save mr-1"></i> Register
+                    </button>
+                    <a href="{% url 'my_cattle' %}" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold text-sm text-center hover:bg-gray-400 transition">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

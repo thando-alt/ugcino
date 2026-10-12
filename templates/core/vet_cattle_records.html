@@ -1,0 +1,79 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Cattle Records - UGCINO Vet Portal{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="bg-white rounded-xl shadow-sm">
+            <div class="border-b px-6 py-4 bg-gradient-to-r from-blue-50 to-white">
+                <h1 class="text-2xl font-bold">Cattle Records</h1>
+                <p class="text-gray-600">View and manage all cattle vaccination records</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Tag Number</th>
+                            <th class="px-4 py-3 text-left">Name</th>
+                            <th class="px-4 py-3 text-left">Farm</th>
+                            <th class="px-4 py-3 text-left">Breed</th>
+                            <th class="px-4 py-3 text-left">Status</th>
+                            <th class="px-4 py-3 text-left">Last Vaccination</th>
+                            <th class="px-4 py-3 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        {% for animal in cattle %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-mono">{{ animal.tag_number }}</td>
+                            <td class="px-4 py-3">{{ animal.name|default:"—" }}</td>
+                            <td class="px-4 py-3">{{ animal.farm.farm_name }}</td>
+                            <td class="px-4 py-3">{{ animal.get_breed_display }}</td>
+                            <td class="px-4 py-3">
+                                {% if animal.vaccination_status == 'fully' %}
+                                <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                                    Fully Vaccinated
+                                </span>
+                                {% elif animal.vaccination_status == 'partial' %}
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs">
+                                    Dose 1 Given
+                                </span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs">
+                                    Not Vaccinated
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                {{ animal.last_vaccination_date|default:"Never"|date:"Y-m-d" }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'vet_cattle_detail' animal.id %}" 
+                                       class="text-blue-600 hover:text-blue-800" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'vet_vaccinate' animal.id %}" 
+                                       class="text-green-600 hover:text-green-800" title="Record Vaccination">
+                                        <i class="fas fa-syringe"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-12 text-gray-500">
+                                <i class="fas fa-paw text-4xl mb-3 text-gray-300"></i>
+                                <p>No cattle records found</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

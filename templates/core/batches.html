@@ -1,0 +1,81 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Vaccine Batches - UGCINO{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="bg-white rounded-xl shadow-sm">
+            <div class="border-b px-6 py-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Vaccine Batches</h1>
+                <a href="{% url 'add_batch' %}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-secondary">
+                    <i class="fas fa-plus mr-2"></i> Add Batch
+                </a>
+            </div>
+            
+            <!-- Low Stock Alert -->
+            {% if low_stock_batches %}
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 m-4 rounded">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                    <div>
+                        <p class="font-semibold text-red-700">Low Stock Alert</p>
+                        <p class="text-sm text-red-600">{{ low_stock_batches.count }} batches have less than {{ low_stock_threshold }} doses remaining</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Batch Number</th>
+                            <th class="px-4 py-3 text-left">Manufacturer</th>
+                            <th class="px-4 py-3 text-left">Quantity</th>
+                            <th class="px-4 py-3 text-left">Remaining</th>
+                            <th class="px-4 py-3 text-left">Expiry Date</th>
+                            <th class="px-4 py-3 text-left">Status</th>
+                            <th class="px-4 py-3 text-left">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        {% for batch in batches %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 font-mono">{{ batch.batch_number }}</td>
+                            <td class="px-4 py-3">{{ batch.manufacturer }}</td>
+                            <td class="px-4 py-3">{{ batch.quantity }}</td>
+                            <td class="px-4 py-3">
+                                <span class="{% if batch.quantity_remaining < 5000 %}text-red-600 font-bold{% endif %}">
+                                    {{ batch.quantity_remaining }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 {% if batch.expiry_date < now %}text-red-600{% endif %}">
+                                {{ batch.expiry_date }}
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 text-xs rounded-full 
+                                    {% if batch.status == 'in_storage' %}bg-green-100 text-green-700
+                                    {% elif batch.status == 'cold_chain_breach' %}bg-red-100 text-red-700
+                                    {% elif batch.status == 'expired' %}bg-gray-100 text-gray-700
+                                    {% else %}bg-blue-100 text-blue-700{% endif %}">
+                                    {{ batch.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">{{ batch.storage_location }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-8 text-gray-500">
+                                No vaccine batches found.
+                                <a href="{% url 'add_batch' %}" class="text-primary ml-2">Add your first batch</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
